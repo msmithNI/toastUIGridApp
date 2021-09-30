@@ -1,0 +1,25 @@
+::ng-deep .tui-grid-tree-button-collapse .tui-grid-btn-tree i {
+  background: none;
+}
+
+::ng-deep .tui-grid-tree-button-expand .tui-grid-btn-tree i {
+  background: none;
+}
+
+::ng-deep .tui-grid-tree-button-collapse .tui-grid-btn-tree {
+  font-size: medium;
+}
+
+::ng-deep .tui-grid-tree-button-expand .tui-grid-btn-tree {
+  font-size: medium;
+}
+
+::ng-deep .tui-grid-tree-button-collapse .tui-grid-btn-tree::before {
+  content: "\f078";
+  font-family: FontAwesome;
+}
+
+::ng-deep .tui-grid-tree-button-expand .tui-grid-btn-tree::before {
+  content: "\f077";
+  font-family: FontAwesome;
+}
