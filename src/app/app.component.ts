@@ -3,6 +3,7 @@ import Grid, { GridOptions } from 'tui-grid';
 import { CellRendererProps } from 'tui-grid/types/renderer';
 import type { NumberField } from '@ni/nimble-components/dist/esm/number-field';
 import '@ni/nimble-components/dist/esm/number-field';
+import { TextField } from '@microsoft/fast-foundation';
 
 class NimbleNumberEditor {
   public el: NumberField;
@@ -18,14 +19,37 @@ class NimbleNumberEditor {
   }
 
   getValue() {
-    return this.el.value;
+    return parseFloat(this.el.value);
   }
 }
 
 class NimbleNumberRenderer {
+  static cache: WeakMap<HTMLElement, NumberField[]> = new WeakMap<HTMLElement, NumberField[]>();
+
   private el: NumberField;
+  private gridElement: HTMLElement;
   constructor(private props: any) {
-    const el = document.createElement('nimble-number-field') as NumberField;
+    const gridElement = props.grid.el;
+    this.gridElement = gridElement;
+    let cachedElements: NumberField[];
+    /*
+    // Cache doesn't really gain us much, the <tr> is still thrown away once you scroll away, and we
+    // still have to remove/readd to DOM, re-layout, etc
+    if (!NimbleNumberRenderer.cache.has(gridElement)) {
+      cachedElements = [];
+      NimbleNumberRenderer.cache.set(gridElement, cachedElements);
+    } else {
+      cachedElements = NimbleNumberRenderer.cache.get(gridElement) as NumberField[];
+    }
+    let el = cachedElements.pop();*/
+    let el;
+    if (!el) {
+      el = document.createElement('nimble-number-field') as NumberField;
+      //console.log('new NumberField');
+    } else {
+      //console.log('from cache');
+    }
+
 
     this.el = el;
     this.render(props);
@@ -35,12 +59,52 @@ class NimbleNumberRenderer {
     return this.el;
   }
 
+  mounted(parentElement: HTMLElement) {
+    // console.log('mounted', this.el, parentElement);
+  }
+
   getValue() {
     return this.el.value;
   }
 
   render(props: any) {
     this.el.value = String(props.value);
+  }
+
+  beforeDestroy() {
+    //NimbleNumberRenderer.cache.get(this.gridElement)?.push(this.el);
+  }
+}
+
+class NimbleTextRenderer {
+  private el: TextField;
+  private gridElement: HTMLElement;
+  constructor(private props: any) {
+    const gridElement = props.grid.el;
+    this.gridElement = gridElement;
+    const el = document.createElement('nimble-text-field') as TextField;
+
+    this.el = el;
+    this.render(props);
+  }
+
+  getElement() {
+    return this.el;
+  }
+
+  mounted(parentElement: HTMLElement) {
+    // console.log('mounted', this.el, parentElement);
+  }
+
+  getValue() {
+    return this.el.value;
+  }
+
+  render(props: any) {
+    this.el.textContent = String(props.value);
+  }
+
+  beforeDestroy() {
   }
 }
 
@@ -175,9 +239,19 @@ export class AppComponent implements AfterViewInit{
           }]
       }
     ];
+    for (let i = 0; i < 100; i++) {
+      treeData.push({
+        name: i.toString(),
+        artist: 'Adele',
+        release: '2008.01.27',
+        type: 'EP',
+        genre: 'Pop,R&B',
+      });
+    }
 
     const options: GridOptions = {
       el: document.getElementById('grid')!,
+      bodyHeight: 600,
       data: treeData as any,
       treeColumnOptions: {
         name: 'name',
@@ -201,7 +275,10 @@ export class AppComponent implements AfterViewInit{
         },
         {
           header: 'Artist',
-          name: 'artist'
+          name: 'artist',
+          renderer: {
+            type: NimbleTextRenderer
+          }
         },
         {
           header: 'Type',
@@ -209,7 +286,13 @@ export class AppComponent implements AfterViewInit{
         },
         {
           header: 'Release',
-          name: 'release'
+          name: 'release',
+          editor: {
+            type: NimbleNumberEditor
+          },
+          renderer: {
+            type: NimbleNumberRenderer
+          }
         },
         {
           header: 'Genre',
@@ -222,11 +305,7 @@ export class AppComponent implements AfterViewInit{
             type: NimbleNumberEditor
           },
           renderer: {
-            type: NimbleNumberRenderer,
-            options: {
-              min: 1,
-              max: 5
-            }
+            type: NimbleNumberRenderer
           }
         }
       ]

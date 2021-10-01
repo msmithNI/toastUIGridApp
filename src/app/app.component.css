@@ -23,3 +23,7 @@
   content: "\f077";
   font-family: FontAwesome;
 }
+
+::ng-deep nimble-number-field {
+  height: 100%;
+}
